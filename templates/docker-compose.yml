@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  # Example service
+  service-name:
+    image: image-name:tag
+    hostname: service-name
+    container_name: service-name
+    ports:
+      - "XXXX:XXXX"
+    environment:
+      # Add environment variables here
+      ENV_VAR: value
+    volumes:
+      - service-data:/path/to/data
+    restart: unless-stopped
+
+volumes:
+  service-data: 
