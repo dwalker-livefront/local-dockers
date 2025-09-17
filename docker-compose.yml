@@ -1,0 +1,7 @@
+# This file defines the shared network for all services
+# Use: docker-compose -f docker-compose.yml -f mongodb/docker-compose.yml -f kafka/docker-compose.yml up -d
+
+# Define shared network
+networks:
+  local-services:
+    driver: bridge

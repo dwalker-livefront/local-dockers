@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   zookeeper:
     image: confluentinc/cp-zookeeper:7.4.0
@@ -13,22 +11,29 @@ services:
     volumes:
       - zookeeper-data:/var/lib/zookeeper/data
       - zookeeper-logs:/var/lib/zookeeper/log
+    healthcheck:
+      test: ["CMD", "bash", "-c", "echo 'srvr' | nc localhost 2181 | grep -q 'Mode: standalone'"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
 
   kafka:
     image: confluentinc/cp-kafka:7.4.0
     hostname: kafka
     container_name: kafka
     depends_on:
-      - zookeeper
+      zookeeper:
+        condition: service_healthy
     ports:
       - "9092:9092"
       - "9101:9101"
     volumes:
       - kafka-data:/var/lib/kafka/data
-      - ./server.properties:/etc/kafka/server.properties
-      - ./producer.properties:/etc/kafka/producer.properties
-      - ./consumer.properties:/etc/kafka/consumer.properties
-      - ./admin.properties:/etc/kafka/admin.properties
+      - ./kafka/server.properties:/etc/kafka/server.properties
+      - ./kafka/producer.properties:/etc/kafka/producer.properties
+      - ./kafka/consumer.properties:/etc/kafka/consumer.properties
+      - ./kafka/admin.properties:/etc/kafka/admin.properties
     command: ["kafka-server-start", "/etc/kafka/server.properties"]
 
   kafka-ui:
@@ -53,8 +58,14 @@ services:
       KAFKA_CLUSTERS_1_PROPERTIES_SASL_MECHANISM: PLAIN
       KAFKA_CLUSTERS_1_PROPERTIES_SASL_JAAS_CONFIG: org.apache.kafka.common.security.plain.PlainLoginModule required username="test" password="test";
     restart: unless-stopped
+    networks:
+      - local-services
 
 volumes:
   zookeeper-data:
   zookeeper-logs:
   kafka-data:
+
+networks:
+  local-services:
+    external: true
